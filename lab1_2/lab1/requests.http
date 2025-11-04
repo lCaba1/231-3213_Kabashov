@@ -1,0 +1,41 @@
+@hostname = http://localhost:8000
+
+
+### create
+POST {{hostname}}/orders/
+Content-Type: application/json
+
+{
+    "user" : 1000,
+    "base" : "BTC",
+    "quote" : "USDT",
+    "side" : "BUY",
+    "size" : 0.01,
+    "price" : 100000,
+    "is_processed" : false,
+    "opened_at": "2025-11-01T00:00:00.000000Z"
+}
+
+
+### retrieve
+GET {{hostname}}/orders/101/
+Content-Type: application/json
+
+
+### update
+PATCH {{hostname}}/orders/101/
+Content-Type: application/json
+
+{
+    "is_processed": true
+}
+
+
+### delete
+DELETE {{hostname}}/orders/101/
+Content-Type: application/json
+
+
+### list
+GET {{hostname}}/orders/
+Content-Type: application/json
