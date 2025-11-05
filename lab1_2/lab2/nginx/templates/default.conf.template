@@ -1,0 +1,25 @@
+server {
+    listen $NGINX_PORT;
+    server_name _;
+
+    include /etc/nginx/mime.types;
+    sendfile    on;
+    charset     utf8;
+    autoindex   off;
+    
+    location ~ ^/(admin|api)/?(.*)$ {
+        proxy_pass http://$BACKEND_HOST:$BACKEND_PORT;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host:$DOCKER_PORT;
+    }
+
+    location / {
+        proxy_pass http://$BACKEND_HOST:$BACKEND_PORT;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host:$DOCKER_PORT;
+    }
+
+    location /static {
+        alias /staticfiles;
+    }
+}

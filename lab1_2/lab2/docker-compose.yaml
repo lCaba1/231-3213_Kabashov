@@ -1,0 +1,56 @@
+name: lab2
+
+services:
+
+  nginx_service:
+    container_name: nginx_container
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - ${DOCKER_PORT}:${NGINX_PORT}
+    depends_on:
+      backend_service:
+        condition: service_started
+    volumes:
+      - staticfiles_volume:/staticfiles
+
+  backend_service:
+    container_name: backend_container
+    image: backend_image
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    command: >
+      sh -c "
+      python manage.py migrate --no-input &&
+      python manage.py shell -c 'from mainapp.gentestdata import *; gentestdata(100)' &&
+      python manage.py collectstatic --no-input &&
+      gunicorn lab1.wsgi:application --workers 6 --bind 0.0.0.0:8000
+      "
+    volumes:
+      - staticfiles_volume:/staticfiles
+    depends_on:
+      postgres_service:
+        condition: service_healthy
+      
+  postgres_service:
+    container_name: postgres_container
+    image: postgres:17
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=$${POSTGRES_USER} --dbname=$${POSTGRES_DB}"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+
+volumes:
+  postgres_volume:
+  staticfiles_volume:
